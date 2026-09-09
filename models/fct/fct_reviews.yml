@@ -1,0 +1,91 @@
+version: 2
+
+models:
+  - name: fct_reviews
+    description: >-
+      One row per source review with non-null review text. Includes listing and
+      host keys plus sentiment, text-length, cancellation, and calendar features
+      for review analysis.
+    columns:
+      - name: review_id
+        description: >-
+          Deterministic review key generated from listing, review date, reviewer
+          name, and review text because the source does not provide a review ID.
+        data_tests:
+          - unique
+          - not_null
+
+      - name: listing_id
+        description: Identifier of the listing receiving the review.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_listings_cleansed')
+                field: listing_id
+              config:
+                severity: error
+                error_if: "> 10"
+                warn_if: "> 0"
+
+      - name: host_id
+        description: Current host identifier associated with the reviewed listing.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_hosts_cleansed')
+                field: host_id
+              config:
+                severity: error
+                error_if: "> 10"
+                warn_if: "> 0"
+
+      - name: review_date
+        description: Date the review was posted; also used as the incremental cursor.
+        data_tests:
+          - not_null
+
+      - name: review_month
+        description: First day of the month in which the review was posted.
+
+      - name: reviewer_name
+        description: Display name supplied for the reviewer.
+
+      - name: review_text
+        description: Non-null review comment supplied by the source.
+        data_tests:
+          - not_null
+
+      - name: review_sentiment
+        description: Source-provided sentiment classification.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - negative
+                  - neutral
+                  - positive
+              config:
+                severity: error
+                error_if: "> 100"
+                warn_if: "> 0"
+
+
+      - name: sentiment_score
+        description: Numeric sentiment mapping where negative is -1, neutral is 0, and positive is 1.
+
+      - name: review_character_count
+        description: Number of characters in the review text.
+
+      - name: review_word_count
+        description: Number of space-delimited words in the trimmed review text.
+
+      - name: is_automated_posting
+        description: True when the review text identifies itself as an automated posting.
+
+      - name: is_host_cancellation
+        description: True when the review text reports that the host canceled the reservation.
+
+      - name: review_count
+        description: Additive review measure fixed at 1 for each fact row.

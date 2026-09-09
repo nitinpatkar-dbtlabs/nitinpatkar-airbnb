@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: dim_hosts_cleansed
+    description: >-
+      Host dimension with one row per host. Standardizes missing host names to
+      `Anonymous` so downstream reporting has a consistent display value.
+    columns:
+      - name: host_id
+        description: Unique identifier for the host, inherited from the source host record.
+        data_tests:
+          - unique
+          - not_null
+
+
+      - name: host_name
+        description: Host display name, with null values replaced by `Anonymous`.
+
+      - name: is_superhost
+        description: Source-provided indicator of whether the host has superhost status.
+
+      - name: created_at
+        description: Timestamp when the source host record was created.
+
+      - name: updated_at
+        description: Timestamp when the source host record was last updated.
