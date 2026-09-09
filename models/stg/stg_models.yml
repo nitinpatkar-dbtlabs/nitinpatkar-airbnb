@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: src_hosts
+    columns:
+      - name: host_id
+        data_tests:
+          - unique
+          - not_null
+
+  - name: src_listings
+    columns:
+      - name: listing_id
+        data_tests:
+          - unique
+          - not_null
+
+      - name: host_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('src_hosts')
+                field: host_id
+
+      - name: room_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - Entire home/apt
+                  - Hotel room
+                  - Private room
+                  - Shared room
+
+  - name: src_reviews
+    columns:
+      - name: listing_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('src_listings')
+                field: listing_id
+
+      - name: review_date
+        data_tests:
+          - not_null

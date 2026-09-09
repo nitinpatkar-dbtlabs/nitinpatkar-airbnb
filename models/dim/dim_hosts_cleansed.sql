@@ -3,7 +3,7 @@
     materialized = 'table'
     )
 }}
-
+-- test2
 WITH src_hosts AS (
     SELECT
         *
