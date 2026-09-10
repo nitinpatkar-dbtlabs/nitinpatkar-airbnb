@@ -25,13 +25,44 @@ models:
           - not_null
 
   - name: dim_listings_w_hosts
+    description: >-
+      One row per listing enriched with its current host attributes. Use
+      `created_at` for listing-creation cohort analysis; this model is not a
+      historical snapshot of listing availability, price, or host status.
+    semantic_model:
+      enabled: true
+    agg_time_dimension: created_at
     columns:
       - name: listing_id
+        description: Unique identifier for the listing and the grain of this model.
+        entity:
+          type: primary
+          name: listing
         data_tests:
           - unique
           - not_null
 
+      - name: listing_name
+        description: Display name of the listing.
+        dimension:
+          type: categorical
+
+      - name: room_type
+        description: Category of accommodation offered by the listing.
+        dimension:
+          type: categorical
+
+      - name: minimum_nights
+        description: Minimum number of nights required for a booking.
+
+      - name: price
+        description: Current advertised price stored on the listing record.
+
       - name: host_id
+        description: Identifier of the current host associated with the listing.
+        entity:
+          type: foreign
+          name: host
         data_tests:
           - not_null
           - relationships:
@@ -40,5 +71,61 @@ models:
                 field: host_id
 
       - name: host_name
+        description: Display name of the current host.
+        dimension:
+          type: categorical
         data_tests:
           - not_null
+
+      - name: host_is_superhost
+        description: Current source-provided indicator of whether the host is a superhost.
+        dimension:
+          type: categorical
+
+      - name: created_at
+        description: Timestamp when the listing record was created.
+        granularity: second
+        dimension:
+          type: time
+
+      - name: updated_at
+        description: Most recent update timestamp across the listing and current host records.
+        granularity: second
+        dimension:
+          type: time
+
+    metrics:
+      - name: listing_count
+        description: Distinct count of listings in the current listing dimension.
+        label: Listing Count
+        type: simple
+        agg: count_distinct
+        expr: listing_id
+
+      - name: host_count
+        description: Distinct count of hosts represented by the selected listings.
+        label: Host Count
+        type: simple
+        agg: count_distinct
+        expr: host_id
+
+      - name: average_listing_price
+        description: Average current advertised price across the selected listings.
+        label: Average Listing Price
+        type: simple
+        agg: average
+        expr: price
+
+      - name: median_listing_price
+        description: Median current advertised price across the selected listings.
+        label: Median Listing Price
+        type: simple
+        agg: median
+        expr: price
+
+      - name: average_minimum_nights
+        description: Average minimum-night requirement across the selected listings.
+        label: Average Minimum Nights
+        type: simple
+        agg: average
+        expr: minimum_nights
